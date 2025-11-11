@@ -1,0 +1,70 @@
+import java.util.Scanner;
+
+public class SJFPreemptive {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+
+        int[] at = new int[n];  // Arrival Time
+        int[] bt = new int[n];  // Burst Time
+        int[] rt = new int[n];  // Remaining Time
+        int[] wt = new int[n];  // Waiting Time
+        int[] tat = new int[n]; // Turnaround Time
+
+        for (int i = 0; i < n; i++) {
+            System.out.print("\nEnter Arrival Time for P" + (i + 1) + ": ");
+            at[i] = sc.nextInt();
+            System.out.print("Enter Burst Time for P" + (i + 1) + ": ");
+            bt[i] = sc.nextInt();
+            rt[i] = bt[i];
+        }
+
+        int complete = 0, time = 0, min = Integer.MAX_VALUE, shortest = 0;
+        boolean check = false;
+
+        while (complete != n) {
+            for (int j = 0; j < n; j++) {
+                if ((at[j] <= time) && (rt[j] < min) && rt[j] > 0) {
+                    min = rt[j];
+                    shortest = j;
+                    check = true;
+                }
+            }
+
+            if (!check) { time++; continue; }
+
+            rt[shortest]--;
+            min = rt[shortest];
+            if (min == 0) min = Integer.MAX_VALUE;
+
+            if (rt[shortest] == 0) {
+                complete++;
+                check = false;
+                int finish_time = time + 1;
+                wt[shortest] = finish_time - bt[shortest] - at[shortest];
+                if (wt[shortest] < 0) wt[shortest] = 0;
+            }
+            time++;
+        }
+
+        for (int i = 0; i < n; i++)
+            tat[i] = bt[i] + wt[i];
+
+        float totalWT = 0, totalTAT = 0;
+        for (int i = 0; i < n; i++) {
+            totalWT += wt[i];
+            totalTAT += tat[i];
+        }
+
+        System.out.println("\nProcess\tAT\tBT\tWT\tTAT");
+        for (int i = 0; i < n; i++)
+            System.out.println("P" + (i + 1) + "\t" + at[i] + "\t" + bt[i] + "\t" + wt[i] + "\t" + tat[i]);
+
+        System.out.println("\nAverage Waiting Time: " + (totalWT / n));
+        System.out.println("Average Turnaround Time: " + (totalTAT / n));
+
+        sc.close();
+    }
+}

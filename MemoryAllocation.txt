@@ -1,0 +1,81 @@
+import java.util.*;
+
+public class MemoryAllocation {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        int[] blocks = {100, 500, 200, 300, 600};
+
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+
+        int[] processes = new int[n];
+        System.out.println("Enter sizes of processes:");
+        for (int i = 0; i < n; i++) {
+            processes[i] = sc.nextInt();
+        }
+
+        System.out.println("\nFirst Fit:");
+        firstFit(blocks.clone(), processes);
+
+        System.out.println("\nBest Fit:");
+        bestFit(blocks.clone(), processes);
+
+        System.out.println("\nWorst Fit:");
+        worstFit(blocks.clone(), processes);
+
+        sc.close();
+    }
+
+    static void firstFit(int[] blocks, int[] processes) {
+        for (int p : processes) {
+            boolean allocated = false;
+            for (int i = 0; i < blocks.length; i++) {
+                if (blocks[i] >= p) {
+                    System.out.println("Process " + p + " allocated to block " + blocks[i]);
+                    blocks[i] -= p;
+                    allocated = true;
+                    break;
+                }
+            }
+            if (!allocated)
+                System.out.println("Process " + p + " not allocated");
+        }
+    }
+
+    static void bestFit(int[] blocks, int[] processes) {
+        for (int p : processes) {
+            int bestIndex = -1;
+            for (int i = 0; i < blocks.length; i++) {
+                if (blocks[i] >= p) {
+                    if (bestIndex == -1 || blocks[i] < blocks[bestIndex])
+                        bestIndex = i;
+                }
+            }
+            if (bestIndex != -1) {
+                System.out.println("Process " + p + " allocated to block " + blocks[bestIndex]);
+                blocks[bestIndex] -= p;
+            } else {
+                System.out.println("Process " + p + " not allocated");
+            }
+        }
+    }
+
+    static void worstFit(int[] blocks, int[] processes) {
+        for (int p : processes) {
+            int worstIndex = -1;
+            for (int i = 0; i < blocks.length; i++) {
+                if (blocks[i] >= p) {
+                    if (worstIndex == -1 || blocks[i] > blocks[worstIndex])
+                        worstIndex = i;
+                }
+            }
+            if (worstIndex != -1) {
+                System.out.println("Process " + p + " allocated to block " + blocks[worstIndex]);
+                blocks[worstIndex] -= p;
+            } else {
+                System.out.println("Process " + p + " not allocated");
+            }
+        }
+    }
+}

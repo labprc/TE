@@ -1,0 +1,50 @@
+MathLibrary.h
+#pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+__declspec(dllexport) int add(int a, int b);
+__declspec(dllexport) int subtract(int a, int b);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+MathLibrary.cpp
+#include "MathLibrary.h"
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int subtract(int a, int b) {
+    return a - b;
+}
+
+
+main.cpp
+#include <iostream>
+#include "MathLibrary.h"
+
+int main() {
+    std::cout << "Add: " << add(4, 3) << std::endl;
+    std::cout << "Subtract: " << subtract(4, 3) << std::endl;
+    return 0;
+}
+
+# Step 1: Compile library into object file
+g++ -fPIC -c MathLibrary.cpp -o MathLibrary.o
+
+# Step 2: Create shared library (.so)
+g++ -shared -o libmath.so MathLibrary.o
+
+# Step 3: Compile and link main program with the library
+g++ main.cpp -L. -lmath -o main
+
+# Step 4: Run the program using local shared library
+LD_LIBRARY_PATH=. ./main
+
+

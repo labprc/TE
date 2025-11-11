@@ -1,0 +1,117 @@
+import java.io.*;
+import java.util.*;
+
+class Pass1Assembler {
+    public static void main(String[] args) throws Exception {
+
+        BufferedReader br = new BufferedReader(new FileReader("input.txt"));
+
+        Map<String, Integer> symtab = new LinkedHashMap<>();
+        List<String> littab = new ArrayList<>();
+        Map<String, String> optab = new LinkedHashMap<>();
+
+        // 🔹 Full Opcode Table (Common Assembly Instructions)
+        optab.put("STOP", "IS");
+        optab.put("ADD", "IS");
+        optab.put("SUB", "IS");
+        optab.put("MULT", "IS");
+        optab.put("MOVER", "IS");
+        optab.put("MOVEM", "IS");
+        optab.put("COMP", "IS");
+        optab.put("BC", "IS");
+        optab.put("DIV", "IS");
+        optab.put("READ", "IS");
+        optab.put("PRINT", "IS");
+
+        // 🔹 Assembler Directives
+        optab.put("START", "AD");
+        optab.put("END", "AD");
+        optab.put("ORIGIN", "AD");
+        optab.put("EQU", "AD");
+        optab.put("LTORG", "AD");
+
+        // 🔹 Declarative Statements
+        optab.put("DS", "DL");
+        optab.put("DC", "DL");
+
+        int LC = 0; // Location Counter
+        String line;
+
+        System.out.println("SOURCE PROGRAM");
+        System.out.println("----------------------");
+
+        while ((line = br.readLine()) != null) {
+            if (line.trim().isEmpty()) continue; // skip empty lines
+            System.out.println(line);
+
+            String[] token = line.trim().split("\\s+");
+
+            // START sets LC
+            if (token[0].equalsIgnoreCase("START")) {
+                LC = Integer.parseInt(token[1]);
+                continue;
+            }
+
+            // Symbol definition
+            if (!optab.containsKey(token[0])) {
+                symtab.put(token[0], LC);
+            }
+
+            // Literal found (=’5’ etc)
+            for (String t : token) {
+                if (t.startsWith("=")) {
+                    littab.add(t);
+                }
+            }
+
+            // Increase LC for each line
+            LC++;
+        }
+
+        // 🔹 Print Symbol Table
+        System.out.println("\nSYMBOL TABLE");
+        System.out.println("Symbol\tAddress");
+        System.out.println("----------------");
+        for (Map.Entry<String, Integer> e : symtab.entrySet()) {
+            System.out.println(e.getKey() + "\t" + e.getValue());
+        }
+
+        // 🔹 Print Literal Table
+        System.out.println("\nLITERAL TABLE");
+        System.out.println("Literal\tAddress");
+        System.out.println("----------------");
+        int addr = LC + 1;
+        for (String l : littab) {
+            System.out.println(l + "\t" + addr++);
+        }
+
+        // 🔹 Print Opcode Table
+        System.out.println("\nOPCODE TABLE");
+        System.out.println("Mnemonic\tClass");
+        System.out.println("----------------");
+        for (Map.Entry<String, String> e : optab.entrySet()) {
+            System.out.println(e.getKey() + "\t\t" + e.getValue());
+        }
+
+        br.close();
+    }
+}
+
+//javac SymTab.java
+//java SymTab input.txt
+/*input.txt file
+/*
+ * START 100
+READ A
+MOVER AREG, B
+ADD C
+MOVEM AREG, RESULT
+LTORG
+A DS 1
+B DC '5'
+C DC '10'
+RESULT DS 1
+END
+
+ * 
+ */
