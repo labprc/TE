@@ -1,0 +1,108 @@
+import java.io.*;
+import java.util.*;
+
+public class Pass2 {
+    public static void main(String[] args) {
+        try {
+            // Read files
+            BufferedReader inter = new BufferedReader(new FileReader("intermediate.txt"));
+            BufferedReader sym = new BufferedReader(new FileReader("symtab.txt"));
+            BufferedReader lit = new BufferedReader(new FileReader("littab.txt"));
+            FileWriter out = new FileWriter("pass2_output.txt");
+
+            // Symbol and Literal Tables
+            Map<Integer, String> symtab = new HashMap<>();
+            Map<Integer, String> littab = new HashMap<>();
+
+            String line;
+            int index = 1;
+
+            // Read Symbol Table
+            while ((line = sym.readLine()) != null) {
+                String[] parts = line.trim().split("\\s+");
+                if (parts.length >= 2)
+                    symtab.put(index++, parts[1]); // index → address
+            }
+
+            // Read Literal Table
+            index = 1;
+            while ((line = lit.readLine()) != null) {
+                String[] parts = line.trim().split("\\s+");
+                if (parts.length >= 2)
+                    littab.put(index++, parts[1]); // index → address
+            }
+
+            // Process Intermediate Code
+            while ((line = inter.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
+
+                // For Imperative Statements (IS)
+                if (line.contains("(IS")) {
+                    String opcode = line.substring(line.indexOf("(IS,") + 4, line.indexOf("(IS,") + 6);
+                    String reg = "0", addr = "000";
+
+                    if (line.contains(")(")) {
+                        reg = line.substring(line.indexOf(")(") + 2, line.indexOf(")(") + 3);
+                    }
+
+                    if (line.contains("(S,")) {
+                        int num = Integer.parseInt(line.substring(line.indexOf("(S,") + 3, line.indexOf(")", line.indexOf("(S,"))));
+                        addr = symtab.getOrDefault(num, "000");
+                    } else if (line.contains("(L,")) {
+                        int num = Integer.parseInt(line.substring(line.indexOf("(L,") + 3, line.indexOf(")", line.indexOf("(L,"))));
+                        addr = littab.getOrDefault(num, "000");
+                    }
+
+                    out.write("+ " + opcode + " " + reg + " " + addr + "\n");
+                }
+
+                // For Declarative Statements (DL,01) - Define Constant
+                else if (line.contains("(DL,01)")) {
+                    String value = line.replaceAll("[^0-9]", "");
+                    while (value.length() > 3) value = value.substring(1);
+                    out.write("+ 00 0 " + value + "\n");
+                }
+
+                // For Assembler Directives (AD)
+                else if (line.contains("(AD,")) {
+                    out.write("\n");
+                }
+            }
+
+            inter.close();
+            sym.close();
+            lit.close();
+            out.close();
+
+            System.out.println("Pass-2 Completed! Output written to pass2_output.txt");
+        } catch (Exception e) {
+            System.out.println(" Error: " + e.getMessage());
+        }
+    }
+}
+/*
+
+javac Pass2.java && java Pass2
+
+ * 📄 symtab.txt
+A      105
+B      106
+C      107
+RESULT 108
+
+📄 littab.txt
+='5'   200
+='1'   201
+='2'   202
+
+📄 intermediate.txt
+(AD,01)(C,100)
+(IS,04)(1)(S,1)
+(IS,05)(1)(S,2)
+(IS,04)(1)(S,3)
+(IS,07)(1)(S,4)
+(DL,01)(C,5)
+(IS,00)
+(AD,02)
+ */
